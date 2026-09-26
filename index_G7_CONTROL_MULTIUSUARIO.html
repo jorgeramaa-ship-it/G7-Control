@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1F33">
+<link rel="manifest" href="manifest.webmanifest">
+<title>G7 CONTROL</title>
+<style>
+:root{--n:#0B1F33;--n2:#123A5A;--l:#EAF2F8;--o:#ED7D31;--g:#B8C9D8;--m:#6F7F8D;--ok:#2E7D32;--bg:#F5F8FB}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--n)} .app{max-width:780px;margin:auto;background:#fff;min-height:100vh}
+header{background:var(--n);color:#fff;padding:15px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+h1{margin:0;font-size:22px} .sub{font-size:12px;font-weight:700;margin-top:4px}
+.topline{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px} .workspace{font-size:11px;font-weight:800} .workspace span{color:#fff}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px} nav button{padding:10px;border:0;border-radius:7px;font-size:11px;font-weight:800;background:#fff;color:var(--n)} nav button.active{background:var(--o);color:#fff}
+main{padding:9px} .screen{display:none} .screen.active{display:block} .card{border:1px solid var(--g);border-radius:9px;overflow:hidden;margin-bottom:10px;background:#fff}
+.title{background:var(--n);color:#fff;padding:9px 11px;font-size:13px;font-weight:800} .orange{background:var(--o)} .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.field{border:1px solid var(--g);border-radius:8px;overflow:hidden} .field label{display:block;background:var(--l);font-size:10px;font-weight:800;padding:6px} .field input{width:100%;border:0;padding:10px;outline:0}
+.prio{display:grid;grid-template-columns:36px 1fr;border-top:1px solid #e6eef4} .prio .n{color:var(--o);font-weight:800;padding:10px} .prio input{border:0;padding:10px;outline:0}
+.day{border-top:1px solid var(--g)} .dayh{background:var(--l);padding:8px} .dayh span{float:right;font-size:10px;color:var(--m)}
+textarea{width:100%;min-height:95px;border:0;outline:0;padding:10px;font-size:15px;line-height:1.45;background:repeating-linear-gradient(to bottom,#fff 0,#fff 28px,#dbe7f0 29px)}
+.pend{display:grid;grid-template-columns:28px 110px 1fr;gap:6px;align-items:center;padding:8px;border-top:1px solid #eef3f7} .pend input[type=text],.obs{width:100%;border:0;border-bottom:1px solid var(--g);padding:7px;outline:0}
+.weekbar{display:flex;gap:5px;overflow:auto;margin-bottom:8px} .weekbar button{border:1px solid var(--g);background:#fff;border-radius:999px;padding:8px 10px;font-weight:800} .weekbar .active{background:var(--n);color:#fff}
+.urow{padding:10px;border-top:1px solid var(--g)} .checks{margin:6px 0} .checks label{display:inline-flex;align-items:center;gap:4px;background:var(--l);padding:5px 7px;border-radius:6px;margin:3px;font-size:11px;font-weight:800}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0} button.action{border:0;border-radius:8px;padding:11px 9px;font-size:12px;font-weight:800;cursor:pointer}
+.primary{background:var(--n);color:#fff} .secondary{background:var(--o);color:#fff} .tertiary{background:#dfe9f2;color:var(--n)} .smallbtn{padding:8px 10px!important;font-size:11px!important}
+.sync{border:1px solid var(--g);border-radius:9px;padding:9px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center} .sync b{font-size:12px} .sync small{display:block;color:var(--m);margin-top:3px}
+.login,.modal{position:fixed;inset:0;background:rgba(11,31,51,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:18px} .login.hidden,.modal.hidden{display:none}
+.loginbox,.modalbox{background:#fff;border-radius:12px;padding:18px;max-width:460px;width:100%;max-height:90vh;overflow:auto} .loginbox h2,.modalbox h2{margin:0 0 6px} .loginbox p,.modalbox p{font-size:12px;color:var(--m);line-height:1.45}
+.loginbox input,.modalbox input,.modalbox select{width:100%;padding:12px;margin:6px 0;border:1px solid var(--g);border-radius:8px;font-size:14px}
+.status{font-size:11px;color:var(--m);text-align:center;margin:8px} .notice{border:1px solid var(--o);background:#fff8f2;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px}
+.member{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #edf2f6;padding:9px 2px;font-size:12px} .role{font-weight:800;color:var(--n2)} .inviteRow{border-top:1px solid #edf2f6;padding:9px 2px;font-size:12px}
+@media(max-width:480px){main{padding:8px} .grid3{gap:4px} .dayh span{display:none}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="loginbox">
+    <h2>G7 CONTROL</h2>
+    <p>Accede con tu cuenta personal. Los usuarios autorizados compartirán el workspace SVK VI.</p>
+    <input id="email" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <div class="actions">
+      <button class="action primary" onclick="signin()">ENTRAR</button>
+      <button class="action secondary" onclick="signup()">CREAR CUENTA</button>
+    </div>
+    <div id="amsg" class="status"></div>
+  </div>
+</div>
+
+<div id="teamModal" class="modal hidden">
+  <div class="modalbox">
+    <h2 id="teamTitle">EQUIPO · SVK VI</h2>
+    <p id="teamDesc">Gestión del workspace compartido.</p>
+
+    <div id="pendingInviteBox" class="notice hidden">
+      <b>INVITACIÓN PENDIENTE</b>
+      <div id="pendingInviteText" style="margin:6px 0"></div>
+      <button class="action secondary" onclick="acceptInvite()">ACEPTAR INVITACIÓN</button>
+    </div>
+
+    <div id="adminInviteBox" class="hidden">
+      <div class="title">INVITAR USUARIO</div>
+      <input id="inviteEmail" type="email" placeholder="Correo del usuario">
+      <select id="inviteRole">
+        <option value="member">MEMBER</option>
+        <option value="admin">ADMIN</option>
+      </select>
+      <button class="action primary" onclick="createInvite()">CREAR INVITACIÓN</button>
+      <div id="inviteMsg" class="status"></div>
+    </div>
+
+    <div class="title" style="margin-top:10px">MIEMBROS</div>
+    <div id="membersList"></div>
+
+    <div class="title" style="margin-top:10px">INVITACIONES</div>
+    <div id="invitesList"></div>
+
+    <div class="actions">
+      <button class="action tertiary" onclick="refreshTeam()">ACTUALIZAR</button>
+      <button class="action primary" onclick="closeTeam()">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <h1>G7 CONTROL</h1>
+  <div class="sub">PLANIFICACIÓN Y CONTROL | SVK VI</div>
+  <div class="topline">
+    <div>
+      <div id="acct" class="sub"></div>
+      <div id="workspaceLine" class="workspace">WORKSPACE: —</div>
+    </div>
+    <button class="action tertiary smallbtn" onclick="openTeam()">EQUIPO</button>
+  </div>
+  <nav>
+    <button id="bp" class="active" onclick="show('planner')">PLANIFICADOR</button>
+    <button id="bw" onclick="show('weekly')">WEEKLY</button>
+    <button id="bd" onclick="show('docs')">DOCS</button>
+  </nav>
+</header>
+
+<main>
+<div id="noWorkspace" class="notice hidden">
+  <b>SIN WORKSPACE ASIGNADO</b><br>
+  Tu cuenta todavía no pertenece a SVK VI. Pulsa <b>EQUIPO</b> para comprobar si tienes una invitación pendiente.
+</div>
+
+<div class="sync">
+  <div>
+    <b id="syncState">PENDIENTE DE SINCRONIZAR</b>
+    <small id="syncDetail">Guardado local activo</small>
+  </div>
+  <button class="action tertiary smallbtn" onclick="syncAll(true)">SINCRONIZAR</button>
+</div>
+
+<section id="planner" class="screen active">
+<div id="weekbar" class="weekbar"></div>
+<div class="grid3">
+  <div class="field"><label>SEMANA</label><input id="pl_semana" readonly></div>
+  <div class="field"><label>DEL</label><input id="pl_del" type="date"></div>
+  <div class="field"><label>AL</label><input id="pl_al" type="date"></div>
+</div>
+
+<div class="card"><div class="title">3 PRIORIDADES</div>
+<div class="prio"><div class="n">01</div><input id="pl_p1"></div>
+<div class="prio"><div class="n">02</div><input id="pl_p2"></div>
+<div class="prio"><div class="n">03</div><input id="pl_p3"></div>
+</div>
+
+<div class="card"><div class="title">PLANIFICACIÓN DIARIA</div><div class="day"><div class="dayh"><b>LUNES</b><span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_lunes"></textarea></div><div class="day"><div class="dayh"><b>MARTES</b><span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_martes"></textarea></div><div class="day"><div class="dayh"><b>MIÉRCOLES</b><span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_miercoles"></textarea></div><div class="day"><div class="dayh"><b>JUEVES</b><span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_jueves"></textarea></div><div class="day"><div class="dayh"><b>VIERNES</b><span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_viernes"></textarea></div></div>
+
+<div class="card"><div class="title orange">PENDIENTE / ESPERANDO RESPUESTA</div>
+<div class="pend"><input id="pl_ck_mta" type="checkbox"><b>MTA</b><input id="pl_mta" type="text"></div>
+<div class="pend"><input id="pl_ck_rm" type="checkbox"><b>RANGE MASTERS</b><input id="pl_rm" type="text"></div>
+<div class="pend"><input id="pl_ck_mf" type="checkbox"><b>MILITARY FOREST</b><input id="pl_mf" type="text"></div>
+<div class="pend"><input id="pl_ck_uni" type="checkbox"><b>UNIDADES</b><input id="pl_uni" type="text"></div>
+</div>
+
+<div class="card"><div class="title">FECHAS LÍMITE</div><textarea id="pl_fechas"></textarea></div>
+<div class="card"><div class="title">PRÓXIMA SEMANA / ARRASTRE</div><textarea id="pl_arrastre"></textarea></div>
+</section>
+
+<section id="weekly" class="screen">
+<div class="card"><div class="title">CONTROL WEEKLY | W42-W51</div><div class="urow"><b>MN BG</b><div class="checks"><label><input type="checkbox" data-wu="MN BG" data-ww="W42">W42</label><label><input type="checkbox" data-wu="MN BG" data-ww="W43">W43</label><label><input type="checkbox" data-wu="MN BG" data-ww="W44">W44</label><label><input type="checkbox" data-wu="MN BG" data-ww="W45">W45</label><label><input type="checkbox" data-wu="MN BG" data-ww="W46">W46</label><label><input type="checkbox" data-wu="MN BG" data-ww="W47">W47</label><label><input type="checkbox" data-wu="MN BG" data-ww="W48">W48</label><label><input type="checkbox" data-wu="MN BG" data-ww="W49">W49</label><label><input type="checkbox" data-wu="MN BG" data-ww="W50">W50</label><label><input type="checkbox" data-wu="MN BG" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="MN BG" placeholder="Observaciones"></div><div class="urow"><b>CAV</b><div class="checks"><label><input type="checkbox" data-wu="CAV" data-ww="W42">W42</label><label><input type="checkbox" data-wu="CAV" data-ww="W43">W43</label><label><input type="checkbox" data-wu="CAV" data-ww="W44">W44</label><label><input type="checkbox" data-wu="CAV" data-ww="W45">W45</label><label><input type="checkbox" data-wu="CAV" data-ww="W46">W46</label><label><input type="checkbox" data-wu="CAV" data-ww="W47">W47</label><label><input type="checkbox" data-wu="CAV" data-ww="W48">W48</label><label><input type="checkbox" data-wu="CAV" data-ww="W49">W49</label><label><input type="checkbox" data-wu="CAV" data-ww="W50">W50</label><label><input type="checkbox" data-wu="CAV" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="CAV" placeholder="Observaciones"></div><div class="urow"><b>ADU</b><div class="checks"><label><input type="checkbox" data-wu="ADU" data-ww="W42">W42</label><label><input type="checkbox" data-wu="ADU" data-ww="W43">W43</label><label><input type="checkbox" data-wu="ADU" data-ww="W44">W44</label><label><input type="checkbox" data-wu="ADU" data-ww="W45">W45</label><label><input type="checkbox" data-wu="ADU" data-ww="W46">W46</label><label><input type="checkbox" data-wu="ADU" data-ww="W47">W47</label><label><input type="checkbox" data-wu="ADU" data-ww="W48">W48</label><label><input type="checkbox" data-wu="ADU" data-ww="W49">W49</label><label><input type="checkbox" data-wu="ADU" data-ww="W50">W50</label><label><input type="checkbox" data-wu="ADU" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="ADU" placeholder="Observaciones"></div><div class="urow"><b>FAB</b><div class="checks"><label><input type="checkbox" data-wu="FAB" data-ww="W42">W42</label><label><input type="checkbox" data-wu="FAB" data-ww="W43">W43</label><label><input type="checkbox" data-wu="FAB" data-ww="W44">W44</label><label><input type="checkbox" data-wu="FAB" data-ww="W45">W45</label><label><input type="checkbox" data-wu="FAB" data-ww="W46">W46</label><label><input type="checkbox" data-wu="FAB" data-ww="W47">W47</label><label><input type="checkbox" data-wu="FAB" data-ww="W48">W48</label><label><input type="checkbox" data-wu="FAB" data-ww="W49">W49</label><label><input type="checkbox" data-wu="FAB" data-ww="W50">W50</label><label><input type="checkbox" data-wu="FAB" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="FAB" placeholder="Observaciones"></div><div class="urow"><b>ENG</b><div class="checks"><label><input type="checkbox" data-wu="ENG" data-ww="W42">W42</label><label><input type="checkbox" data-wu="ENG" data-ww="W43">W43</label><label><input type="checkbox" data-wu="ENG" data-ww="W44">W44</label><label><input type="checkbox" data-wu="ENG" data-ww="W45">W45</label><label><input type="checkbox" data-wu="ENG" data-ww="W46">W46</label><label><input type="checkbox" data-wu="ENG" data-ww="W47">W47</label><label><input type="checkbox" data-wu="ENG" data-ww="W48">W48</label><label><input type="checkbox" data-wu="ENG" data-ww="W49">W49</label><label><input type="checkbox" data-wu="ENG" data-ww="W50">W50</label><label><input type="checkbox" data-wu="ENG" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="ENG" placeholder="Observaciones"></div><div class="urow"><b>CSS</b><div class="checks"><label><input type="checkbox" data-wu="CSS" data-ww="W42">W42</label><label><input type="checkbox" data-wu="CSS" data-ww="W43">W43</label><label><input type="checkbox" data-wu="CSS" data-ww="W44">W44</label><label><input type="checkbox" data-wu="CSS" data-ww="W45">W45</label><label><input type="checkbox" data-wu="CSS" data-ww="W46">W46</label><label><input type="checkbox" data-wu="CSS" data-ww="W47">W47</label><label><input type="checkbox" data-wu="CSS" data-ww="W48">W48</label><label><input type="checkbox" data-wu="CSS" data-ww="W49">W49</label><label><input type="checkbox" data-wu="CSS" data-ww="W50">W50</label><label><input type="checkbox" data-wu="CSS" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="CSS" placeholder="Observaciones"></div><div class="urow"><b>SIG</b><div class="checks"><label><input type="checkbox" data-wu="SIG" data-ww="W42">W42</label><label><input type="checkbox" data-wu="SIG" data-ww="W43">W43</label><label><input type="checkbox" data-wu="SIG" data-ww="W44">W44</label><label><input type="checkbox" data-wu="SIG" data-ww="W45">W45</label><label><input type="checkbox" data-wu="SIG" data-ww="W46">W46</label><label><input type="checkbox" data-wu="SIG" data-ww="W47">W47</label><label><input type="checkbox" data-wu="SIG" data-ww="W48">W48</label><label><input type="checkbox" data-wu="SIG" data-ww="W49">W49</label><label><input type="checkbox" data-wu="SIG" data-ww="W50">W50</label><label><input type="checkbox" data-wu="SIG" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="SIG" placeholder="Observaciones"></div><div class="urow"><b>CZE</b><div class="checks"><label><input type="checkbox" data-wu="CZE" data-ww="W42">W42</label><label><input type="checkbox" data-wu="CZE" data-ww="W43">W43</label><label><input type="checkbox" data-wu="CZE" data-ww="W44">W44</label><label><input type="checkbox" data-wu="CZE" data-ww="W45">W45</label><label><input type="checkbox" data-wu="CZE" data-ww="W46">W46</label><label><input type="checkbox" data-wu="CZE" data-ww="W47">W47</label><label><input type="checkbox" data-wu="CZE" data-ww="W48">W48</label><label><input type="checkbox" data-wu="CZE" data-ww="W49">W49</label><label><input type="checkbox" data-wu="CZE" data-ww="W50">W50</label><label><input type="checkbox" data-wu="CZE" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="CZE" placeholder="Observaciones"></div><div class="urow"><b>MP</b><div class="checks"><label><input type="checkbox" data-wu="MP" data-ww="W42">W42</label><label><input type="checkbox" data-wu="MP" data-ww="W43">W43</label><label><input type="checkbox" data-wu="MP" data-ww="W44">W44</label><label><input type="checkbox" data-wu="MP" data-ww="W45">W45</label><label><input type="checkbox" data-wu="MP" data-ww="W46">W46</label><label><input type="checkbox" data-wu="MP" data-ww="W47">W47</label><label><input type="checkbox" data-wu="MP" data-ww="W48">W48</label><label><input type="checkbox" data-wu="MP" data-ww="W49">W49</label><label><input type="checkbox" data-wu="MP" data-ww="W50">W50</label><label><input type="checkbox" data-wu="MP" data-ww="W51">W51</label></div><input class="obs weeklyObs" data-wo="MP" placeholder="Observaciones"></div></div>
+</section>
+
+<section id="docs" class="screen">
+<div class="grid3">
+  <div class="field"><label>MES</label><input id="dc_mes"></div>
+  <div class="field"><label>PERIODO</label><input id="dc_periodo"></div>
+  <div></div>
+</div>
+<div class="card"><div class="title">MONTHLY · MARCHAS · ODCR</div><div class="urow"><b>MN BG</b><div class="checks"><label><input type="checkbox" data-du="MN BG" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="MN BG" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="MN BG" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="MN BG" placeholder="Observaciones"></div><div class="urow"><b>CAV</b><div class="checks"><label><input type="checkbox" data-du="CAV" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="CAV" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="CAV" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="CAV" placeholder="Observaciones"></div><div class="urow"><b>ADU</b><div class="checks"><label><input type="checkbox" data-du="ADU" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="ADU" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="ADU" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="ADU" placeholder="Observaciones"></div><div class="urow"><b>FAB</b><div class="checks"><label><input type="checkbox" data-du="FAB" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="FAB" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="FAB" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="FAB" placeholder="Observaciones"></div><div class="urow"><b>ENG</b><div class="checks"><label><input type="checkbox" data-du="ENG" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="ENG" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="ENG" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="ENG" placeholder="Observaciones"></div><div class="urow"><b>CSS</b><div class="checks"><label><input type="checkbox" data-du="CSS" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="CSS" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="CSS" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="CSS" placeholder="Observaciones"></div><div class="urow"><b>SIG</b><div class="checks"><label><input type="checkbox" data-du="SIG" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="SIG" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="SIG" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="SIG" placeholder="Observaciones"></div><div class="urow"><b>CZE</b><div class="checks"><label><input type="checkbox" data-du="CZE" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="CZE" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="CZE" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="CZE" placeholder="Observaciones"></div><div class="urow"><b>MP</b><div class="checks"><label><input type="checkbox" data-du="MP" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="MP" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="MP" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="MP" placeholder="Observaciones"></div></div>
+<div class="card"><div class="title orange">PENDIENTES / NO RECIBIDOS</div><textarea id="dc_pendientes"></textarea></div>
+<div class="card"><div class="title">NOTAS</div><textarea id="dc_notas"></textarea></div>
+</section>
+
+<div class="actions">
+  <button class="action tertiary" onclick="signout()">CERRAR SESIÓN</button>
+  <button class="action primary" onclick="window.print()">IMPRIMIR / PDF</button>
+</div>
+<div id="status" class="status">Autoguardado local activado</div>
+</main>
+</div>
+
+<script>
+const URL="https://zwyrjtodcenoazcnfyte.supabase.co";
+const KEY="sb_publishable_pWWqDso4dk9pZHtzO8SXAg_DtnA2LeD";
+const W=["W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51"];
+let session=null,current=localStorage.getItem('g7_current')||'W42',timer=null;
+let workspace=null,myRole=null,pendingInvite=null;
+const P=['del','al','p1','p2','p3','lunes','martes','miercoles','jueves','viernes','mta','rm','mf','uni','fechas','arrastre','ck_mta','ck_rm','ck_mf','ck_uni'];
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  [['planner','bp'],['weekly','bw'],['docs','bd']].forEach(([a,b])=>document.getElementById(b).classList.toggle('active',a===id));
+}
+function headers(auth=true){let h={apikey:KEY,'Content-Type':'application/json'};if(auth&&session?.access_token)h.Authorization='Bearer '+session.access_token;return h}
+async function refreshSession(){
+  if(!session?.refresh_token)return false;
+  try{
+    let r=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:headers(false),body:JSON.stringify({refresh_token:session.refresh_token})});
+    let d=await r.json(); if(!r.ok)return false;
+    session=d;localStorage.setItem('g7_session',JSON.stringify(d));return true;
+  }catch(e){return false}
+}
+async function apifetch(path,opt={},retry=true){
+  opt.headers={...headers(true),...(opt.headers||{})};
+  let r=await fetch(URL+path,opt);
+  if(r.status===401&&retry&&await refreshSession()){opt.headers={...headers(true),...(opt.headers||{})};r=await fetch(URL+path,opt)}
+  return r;
+}
+
+async function signup(){
+  amsg.textContent='Creando cuenta...';
+  let r=await fetch(URL+'/auth/v1/signup',{method:'POST',headers:headers(false),body:JSON.stringify({email:email.value.trim(),password:pass.value})});
+  let d=await r.json();
+  amsg.textContent=r.ok?'Cuenta creada. Confirma el correo y después entra.':'Error: '+(d.msg||d.message||'No se pudo crear');
+}
+async function signin(){
+  amsg.textContent='Entrando...';
+  let r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:headers(false),body:JSON.stringify({email:email.value.trim(),password:pass.value})});
+  let d=await r.json();
+  if(!r.ok){amsg.textContent='Error: '+(d.error_description||d.message||'No se pudo entrar');return}
+  session=d;localStorage.setItem('g7_session',JSON.stringify(d));login.classList.add('hidden');acct.textContent='CONECTADO · '+d.user.email;
+  await loadWorkspace();
+}
+function signout(){
+  session=null;workspace=null;myRole=null;pendingInvite=null;
+  localStorage.removeItem('g7_session');login.classList.remove('hidden');acct.textContent='';workspaceLine.textContent='WORKSPACE: —';
+}
+
+async function loadWorkspace(){
+  workspace=null;myRole=null;pendingInvite=null;
+  let r=await apifetch('/rest/v1/workspace_members?user_id=eq.'+encodeURIComponent(session.user.id)+'&select=workspace_id,role,workspaces(id,name,owner_id)&limit=1');
+  if(r.ok){
+    let rows=await r.json();
+    if(rows.length&&rows[0].workspaces){
+      workspace=rows[0].workspaces;myRole=rows[0].role;
+      workspaceLine.textContent='WORKSPACE: '+workspace.name+' · '+myRole.toUpperCase();
+      noWorkspace.classList.add('hidden');
+      await syncAll(true);
+      return;
+    }
+  }
+  workspaceLine.textContent='WORKSPACE: SIN ASIGNAR';
+  noWorkspace.classList.remove('hidden');
+  await findPendingInvite();
+}
+
+async function findPendingInvite(){
+  pendingInvite=null;
+  let mail=session.user.email||'';
+  let r=await apifetch('/rest/v1/workspace_invites?email=ilike.'+encodeURIComponent(mail)+'&status=eq.pending&select=id,workspace_id,email,role,status,workspaces(name)&order=created_at.desc&limit=1');
+  if(r.ok){let rows=await r.json();if(rows.length)pendingInvite=rows[0]}
+  return pendingInvite;
+}
+
+function openTeam(){teamModal.classList.remove('hidden');refreshTeam()}
+function closeTeam(){teamModal.classList.add('hidden')}
+
+async function refreshTeam(){
+  membersList.innerHTML='<div class="status">Cargando...</div>';invitesList.innerHTML='';
+  await findPendingInvite();
+  if(pendingInvite){
+    pendingInviteBox.classList.remove('hidden');
+    pendingInviteText.textContent=(pendingInvite.workspaces?.name||'SVK VI')+' · '+pendingInvite.role.toUpperCase();
+  }else pendingInviteBox.classList.add('hidden');
+
+  if(!workspace){
+    adminInviteBox.classList.add('hidden');membersList.innerHTML='<div class="status">Aún no perteneces a un workspace.</div>';return;
+  }
+
+  teamTitle.textContent='EQUIPO · '+workspace.name;
+  teamDesc.textContent='Tu rol: '+myRole.toUpperCase();
+  adminInviteBox.classList.toggle('hidden',myRole!=='admin');
+
+  let mr=await apifetch('/rest/v1/workspace_members?workspace_id=eq.'+workspace.id+'&select=user_id,role,created_at&order=created_at.asc');
+  if(mr.ok){
+    let m=await mr.json();
+    membersList.innerHTML=m.length?m.map(x=>`<div class="member"><span>${x.user_id===session.user.id?'TÚ':x.user_id.slice(0,8)+'…'}</span><span class="role">${x.role.toUpperCase()}</span></div>`).join(''):'<div class="status">Sin miembros.</div>';
+  }
+
+  if(myRole==='admin'){
+    let ir=await apifetch('/rest/v1/workspace_invites?workspace_id=eq.'+workspace.id+'&select=email,role,status,created_at&order=created_at.desc');
+    if(ir.ok){
+      let inv=await ir.json();
+      invitesList.innerHTML=inv.length?inv.map(x=>`<div class="inviteRow"><b>${x.email}</b><br>${x.role.toUpperCase()} · ${x.status.toUpperCase()}</div>`).join(''):'<div class="status">Sin invitaciones.</div>';
+    }
+  }else invitesList.innerHTML='<div class="status">Visible para administradores.</div>';
+}
+
+async function createInvite(){
+  if(!workspace||myRole!=='admin')return;
+  let mail=inviteEmail.value.trim().toLowerCase(); if(!mail){inviteMsg.textContent='Introduce un correo.';return}
+  inviteMsg.textContent='Creando invitación...';
+  let body={workspace_id:workspace.id,email:mail,role:inviteRole.value,invited_by:session.user.id,status:'pending'};
+  let r=await apifetch('/rest/v1/workspace_invites',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});
+  inviteMsg.textContent=r.ok?'Invitación creada. El usuario debe crear su cuenta con ese mismo correo y pulsar ACEPTAR INVITACIÓN.':'Error al crear invitación.';
+  if(r.ok){inviteEmail.value='';refreshTeam()}
+}
+
+async function acceptInvite(){
+  let r=await apifetch('/rest/v1/rpc/accept_g7_invite',{method:'POST',body:'{}'});
+  if(!r.ok){pendingInviteText.textContent='No se pudo aceptar la invitación.';return}
+  pendingInviteBox.classList.add('hidden');await loadWorkspace();await refreshTeam();
+}
+
+function pkey(w=current){return'g7_planner_'+w}
+function pdata(){let d={semana:current};P.forEach(i=>{let e=document.getElementById('pl_'+i);d[i]=e.type==='checkbox'?e.checked:e.value});return d}
+function papply(d={}){pl_semana.value=current;P.forEach(i=>{let e=document.getElementById('pl_'+i),v=d[i];e.type==='checkbox'?e.checked=!!v:e.value=v||''})}
+function pload(){try{papply(JSON.parse(localStorage.getItem(pkey())||'{}'))}catch(e){papply()};weekbar.innerHTML=W.map(w=>`<button class="${w===current?'active':''}" onclick="switchW('${w}')">${w}</button>`).join('')}
+function psave(){let d=pdata();localStorage.setItem(pkey(),JSON.stringify(d));schedule('planner_'+current,d)}
+function switchW(w){psave();current=w;localStorage.setItem('g7_current',w);pload();if(session&&workspace)pull('planner_'+w,true)}
+
+function wdata(){let d={checks:{},obs:{}};document.querySelectorAll('[data-wu]').forEach(e=>d.checks[e.dataset.wu+'|'+e.dataset.ww]=e.checked);document.querySelectorAll('.weeklyObs').forEach(e=>d.obs[e.dataset.wo]=e.value);return d}
+function wapply(d={}){document.querySelectorAll('[data-wu]').forEach(e=>e.checked=!!(d.checks||{})[e.dataset.wu+'|'+e.dataset.ww]);document.querySelectorAll('.weeklyObs').forEach(e=>e.value=(d.obs||{})[e.dataset.wo]||'')}
+function wsave(){let d=wdata();localStorage.setItem('g7_weekly',JSON.stringify(d));schedule('weekly_control',d)}
+
+function ddata(){let d={mes:dc_mes.value,periodo:dc_periodo.value,pendientes:dc_pendientes.value,notas:dc_notas.value,checks:{},obs:{}};document.querySelectorAll('[data-du]').forEach(e=>d.checks[e.dataset.du+'|'+e.dataset.dt]=e.checked);document.querySelectorAll('.docObs').forEach(e=>d.obs[e.dataset.do]=e.value);return d}
+function dapply(d={}){dc_mes.value=d.mes||'';dc_periodo.value=d.periodo||'';dc_pendientes.value=d.pendientes||'';dc_notas.value=d.notas||'';document.querySelectorAll('[data-du]').forEach(e=>e.checked=!!(d.checks||{})[e.dataset.du+'|'+e.dataset.dt]);document.querySelectorAll('.docObs').forEach(e=>e.value=(d.obs||{})[e.dataset.do]||'')}
+function dsave(){let d=ddata();localStorage.setItem('g7_docs',JSON.stringify(d));schedule('document_control',d)}
+
+function localData(s){if(s.startsWith('planner_')){let w=s.slice(8);try{return JSON.parse(localStorage.getItem(pkey(w))||'null')}catch(e){return null}}if(s==='weekly_control'){try{return JSON.parse(localStorage.getItem('g7_weekly')||'null')}catch(e){return null}}if(s==='document_control'){try{return JSON.parse(localStorage.getItem('g7_docs')||'null')}catch(e){return null}}}
+function applyS(s,d){if(s.startsWith('planner_')){let w=s.slice(8);localStorage.setItem(pkey(w),JSON.stringify(d||{}));if(w===current)papply(d)}else if(s==='weekly_control'){localStorage.setItem('g7_weekly',JSON.stringify(d||{}));wapply(d)}else if(s==='document_control'){localStorage.setItem('g7_docs',JSON.stringify(d||{}));dapply(d)}}
+
+function schedule(s,d){
+  syncState.textContent='PENDIENTE DE SINCRONIZAR';syncDetail.textContent='Cambios guardados localmente';
+  if(!session||!workspace||!navigator.onLine)return;
+  clearTimeout(timer);timer=setTimeout(()=>push(s,d),650);
+}
+async function push(s,d){
+  if(!workspace)return;
+  let body={workspace_id:workspace.id,user_id:session.user.id,section_key:s,data:d,updated_at:new Date().toISOString()};
+  let r=await apifetch('/rest/v1/g7_sync?on_conflict=workspace_id,section_key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)});
+  if(r.ok){syncState.textContent='SINCRONIZADO';syncDetail.textContent='Workspace '+workspace.name+' · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+  else{syncState.textContent='ERROR DE SINCRONIZACIÓN';syncDetail.textContent='Se conserva la copia local.'}
+}
+async function pull(s,cloudWins=false){
+  if(!workspace)return;
+  let r=await apifetch('/rest/v1/g7_sync?workspace_id=eq.'+workspace.id+'&section_key=eq.'+encodeURIComponent(s)+'&select=data&limit=1');
+  if(!r.ok)return;
+  let rows=await r.json(),loc=localData(s);
+  if(rows.length){if(cloudWins||!loc)applyS(s,rows[0].data)}else if(loc)await push(s,loc);
+}
+async function syncAll(force=false){
+  if(!session||!workspace){syncState.textContent='SIN WORKSPACE';syncDetail.textContent='Comprueba EQUIPO / invitaciones.';return}
+  syncDetail.textContent='Sincronizando '+workspace.name+'...';
+  for(const w of W)await pull('planner_'+w,force);
+  await pull('weekly_control',force);await pull('document_control',force);
+  syncState.textContent='SINCRONIZADO';syncDetail.textContent='Workspace '+workspace.name+' actualizado';
+}
+
+pload();
+try{wapply(JSON.parse(localStorage.getItem('g7_weekly')||'{}'))}catch(e){}
+try{dapply(JSON.parse(localStorage.getItem('g7_docs')||'{}'))}catch(e){}
+P.forEach(i=>{let e=document.getElementById('pl_'+i);e.addEventListener(e.type==='checkbox'?'change':'input',psave)});
+document.querySelectorAll('[data-wu],.weeklyObs').forEach(e=>e.addEventListener(e.type==='checkbox'?'change':'input',wsave));
+document.querySelectorAll('#docs input,#docs textarea').forEach(e=>e.addEventListener(e.type==='checkbox'?'change':'input',dsave));
+
+window.addEventListener('online',()=>syncAll(false));
+window.addEventListener('offline',()=>{syncState.textContent='OFFLINE';syncDetail.textContent='Los cambios se guardarán localmente.'});
+
+try{
+  let s=JSON.parse(localStorage.getItem('g7_session')||'null');
+  if(s?.access_token){session=s;login.classList.add('hidden');acct.textContent='CONECTADO · '+(s.user?.email||'usuario');loadWorkspace()}
+}catch(e){}
+
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
