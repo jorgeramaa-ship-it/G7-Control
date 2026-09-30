@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1F33">
+<title>G7 CONTROL V2</title>
+<style>
+:root{--n:#0B1F33;--n2:#123A5A;--b:#2F75B5;--l:#EAF2F8;--o:#ED7D31;--g:#B8C9D8;--m:#6F7F8D;--ok:#2E7D32;--bad:#B3261E;--bg:#F5F8FB}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--n)}
+.app{max-width:820px;margin:auto;background:#fff;min-height:100vh}
+header{background:var(--n);color:#fff;padding:14px;position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.16)}
+h1{margin:0;font-size:22px;letter-spacing:.2px}.sub{font-size:12px;font-weight:700;margin-top:4px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.account{font-size:11px;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#fff;color:var(--n);font-size:10px;font-weight:900}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px}
+nav button{padding:10px;border:0;border-radius:7px;font-size:11px;font-weight:900;background:#fff;color:var(--n)}
+nav button.active{background:var(--o);color:#fff}
+main{padding:10px}.screen{display:none}.screen.active{display:block}
+.card{border:1px solid var(--g);border-radius:10px;overflow:hidden;margin-bottom:10px;background:#fff}
+.title{background:var(--n);color:#fff;padding:9px 11px;font-size:13px;font-weight:900}.orange{background:var(--o)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.field{border:1px solid var(--g);border-radius:8px;overflow:hidden}.field label{display:block;background:var(--l);font-size:10px;font-weight:900;padding:6px}.field input{width:100%;border:0;padding:10px;outline:0}
+.prio{display:grid;grid-template-columns:42px 1fr;border-top:1px solid #e6eef4}.prio .n{color:var(--o);font-weight:900;padding:10px}.prio input{border:0;padding:10px;outline:0}
+.day{border-top:1px solid var(--g)}.dayh{background:var(--l);padding:8px;font-weight:900;font-size:12px}.dayh span{float:right;font-size:10px;color:var(--m);font-weight:700}
+textarea{width:100%;min-height:96px;border:0;outline:0;padding:10px;font-size:15px;line-height:1.45;background:repeating-linear-gradient(to bottom,#fff 0,#fff 28px,#dbe7f0 29px)}
+.pend{display:grid;grid-template-columns:28px 116px 1fr;gap:6px;align-items:center;padding:8px;border-top:1px solid #eef3f7}.pend input[type=text],.obs{width:100%;border:0;border-bottom:1px solid var(--g);padding:7px;outline:0}
+.weekbar{display:flex;gap:5px;overflow:auto;margin-bottom:8px;padding-bottom:2px}.weekbar button{border:1px solid var(--g);background:#fff;border-radius:999px;padding:8px 11px;font-weight:900}.weekbar .active{background:var(--n);color:#fff}
+.urow{padding:10px;border-top:1px solid var(--g)}.checks{margin:6px 0}.checks label{display:inline-flex;align-items:center;gap:4px;background:var(--l);padding:5px 7px;border-radius:6px;margin:3px;font-size:11px;font-weight:900}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}.action{border:0;border-radius:8px;padding:11px 9px;font-size:12px;font-weight:900;cursor:pointer}
+.primary{background:var(--n);color:#fff}.secondary{background:var(--o);color:#fff}.tertiary{background:#dfe9f2;color:var(--n)}.danger{background:#f6d8d5;color:var(--bad)}
+.small{padding:7px 9px;font-size:10px}
+.sync{border:1px solid var(--g);border-radius:9px;padding:9px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center}.sync b{font-size:12px}.sync small{display:block;color:var(--m);margin-top:3px}
+.login,.modal{position:fixed;inset:0;background:rgba(11,31,51,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:18px}.hidden{display:none!important}
+.box{background:#fff;border-radius:12px;padding:18px;max-width:480px;width:100%;max-height:92vh;overflow:auto}.box h2{margin:0 0 6px}.box p{font-size:12px;color:var(--m);line-height:1.45}
+.box input{width:100%;padding:12px;margin:6px 0;border:1px solid var(--g);border-radius:8px;font-size:14px}
+.status{font-size:11px;color:var(--m);text-align:center;margin:8px}.notice{border:1px solid var(--o);background:#fff8f2;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+@media(max-width:520px){main{padding:8px}.grid3{grid-template-columns:1fr 1fr}.grid3 .field:first-child{grid-column:1/-1}.dayh span{display:none}.pend{grid-template-columns:28px 100px 1fr}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="box">
+    <h2>G7 CONTROL V2</h2>
+    <p>Acceso al espacio compartido SVK VI. Solo pueden entrar las cuentas autorizadas.</p>
+    <input id="email" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <div class="actions">
+      <button class="action primary" onclick="signin()">ENTRAR</button>
+      <button class="action secondary" onclick="signup()">CREAR CUENTA</button>
+    </div>
+    <button class="action tertiary" style="width:100%" onclick="forgotPassword()">HE OLVIDADO MI CONTRASEÑA</button>
+    <div id="authMsg" class="status"></div>
+  </div>
+</div>
+
+<div id="resetModal" class="modal hidden">
+  <div class="box">
+    <h2>NUEVA CONTRASEÑA</h2>
+    <p>Define una nueva contraseña para tu cuenta.</p>
+    <input id="newPass" type="password" placeholder="Nueva contraseña" autocomplete="new-password">
+    <input id="newPass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password">
+    <button class="action primary" style="width:100%" onclick="setNewPassword()">GUARDAR CONTRASEÑA</button>
+    <div id="resetMsg" class="status"></div>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <h1>G7 CONTROL</h1>
+  <div class="sub">PLANIFICACIÓN Y CONTROL · SVK VI · V2</div>
+  <div class="topline">
+    <div>
+      <div id="acct" class="account"></div>
+      <div id="roleLine" class="sub"></div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="badge">SVK VI</span>
+      <button class="action tertiary small" onclick="signout()">SALIR</button>
+    </div>
+  </div>
+  <nav>
+    <button id="bp" class="active" onclick="show('planner')">PLANIFICADOR</button>
+    <button id="bw" onclick="show('weekly')">WEEKLY</button>
+    <button id="bd" onclick="show('docs')">DOCS</button>
+  </nav>
+</header>
+
+<main>
+<div class="sync">
+  <div><b id="syncState">SINCRONIZACIÓN</b><small id="syncDetail">Pendiente de acceso</small></div>
+  <button class="action tertiary small" onclick="syncAll(true)">ACTUALIZAR</button>
+</div>
+
+<section id="planner" class="screen active">
+<div id="weekbar" class="weekbar"></div>
+<div class="grid3">
+  <div class="field"><label>SEMANA</label><input id="pl_semana" readonly></div>
+  <div class="field"><label>DEL</label><input id="pl_del" type="date"></div>
+  <div class="field"><label>AL</label><input id="pl_al" type="date"></div>
+</div>
+
+<div class="card"><div class="title">3 PRIORIDADES</div>
+  <div class="prio"><div class="n">01</div><input id="pl_p1"></div>
+  <div class="prio"><div class="n">02</div><input id="pl_p2"></div>
+  <div class="prio"><div class="n">03</div><input id="pl_p3"></div>
+</div>
+
+<div class="card"><div class="title">PLANIFICACIÓN DIARIA</div>
+  <div class="day"><div class="dayh">LUNES <span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_lunes"></textarea></div>
+  <div class="day"><div class="dayh">MARTES <span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_martes"></textarea></div>
+  <div class="day"><div class="dayh">MIÉRCOLES <span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_miercoles"></textarea></div>
+  <div class="day"><div class="dayh">JUEVES <span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_jueves"></textarea></div>
+  <div class="day"><div class="dayh">VIERNES <span>Reuniones / Tareas / Seguimiento</span></div><textarea id="pl_viernes"></textarea></div>
+</div>
+
+<div class="card"><div class="title orange">PENDIENTE / ESPERANDO RESPUESTA</div>
+  <div class="pend"><input id="pl_ck_mta" type="checkbox"><b>MTA</b><input id="pl_mta" type="text"></div>
+  <div class="pend"><input id="pl_ck_rm" type="checkbox"><b>RANGE MASTERS</b><input id="pl_rm" type="text"></div>
+  <div class="pend"><input id="pl_ck_mf" type="checkbox"><b>MILITARY FOREST</b><input id="pl_mf" type="text"></div>
+  <div class="pend"><input id="pl_ck_uni" type="checkbox"><b>UNIDADES</b><input id="pl_uni" type="text"></div>
+</div>
+<div class="card"><div class="title">FECHAS LÍMITE</div><textarea id="pl_fechas"></textarea></div>
+<div class="card"><div class="title">PRÓXIMA SEMANA / ARRASTRE</div><textarea id="pl_arrastre"></textarea></div>
+</section>
+
+<section id="weekly" class="screen">
+<div class="card"><div class="title">CONTROL WEEKLY · W42-W51</div><div id="weeklyRows"></div></div>
+</section>
+
+<section id="docs" class="screen">
+<div class="grid3">
+  <div class="field"><label>MES</label><input id="dc_mes"></div>
+  <div class="field"><label>PERIODO</label><input id="dc_periodo"></div>
+  <div></div>
+</div>
+<div class="card"><div class="title">MONTHLY · MARCHAS · ODCR</div><div id="docsRows"></div></div>
+<div class="card"><div class="title orange">PENDIENTES / NO RECIBIDOS</div><textarea id="dc_pendientes"></textarea></div>
+<div class="card"><div class="title">NOTAS</div><textarea id="dc_notas"></textarea></div>
+</section>
+</main>
+</div>
+
+<script>
+const URL="https://zwyrjtodcenoazcnfyte.supabase.co";
+const KEY="sb_publishable_pWWqDso4dk9pZHtzO8SXAg_DtnA2LeD";
+const W=["W42","W43","W44","W45","W46","W47","W48","W49","W50","W51"];
+const UNITS=["MN BG","CAV","ADU","FAB","ENG","CSS","SIG","CZE","MP"];
+const P=["del","al","p1","p2","p3","lunes","martes","miercoles","jueves","viernes","mta","rm","mf","uni","fechas","arrastre","ck_mta","ck_rm","ck_mf","ck_uni"];
+let session=null,current="W42",role=null,recoveryToken=null,timer=null;
+
+function headers(auth=true){
+  const h={apikey:KEY,"Content-Type":"application/json"};
+  if(auth&&session?.access_token)h.Authorization="Bearer "+session.access_token;
+  return h;
+}
+function show(id){
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  [["planner","bp"],["weekly","bw"],["docs","bd"]].forEach(([a,b])=>document.getElementById(b).classList.toggle("active",a===id));
+}
+function setSync(a,b){syncState.textContent=a;syncDetail.textContent=b}
+async function refreshSession(){
+  if(!session?.refresh_token)return false;
+  try{
+    const r=await fetch(URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:headers(false),body:JSON.stringify({refresh_token:session.refresh_token})});
+    const d=await r.json();
+    if(!r.ok)return false;
+    session=d;localStorage.setItem("g7v2_session",JSON.stringify(d));return true;
+  }catch(e){return false}
+}
+async function api(path,opt={},retry=true){
+  opt.headers={...headers(true),...(opt.headers||{})};
+  let r=await fetch(URL+path,opt);
+  if(r.status===401&&retry&&await refreshSession()){
+    opt.headers={...headers(true),...(opt.headers||{})};r=await fetch(URL+path,opt);
+  }
+  return r;
+}
+async function signup(){
+  const mail=email.value.trim().toLowerCase(),pw=pass.value;
+  if(!mail||!pw){authMsg.textContent="Introduce correo y contraseña.";return}
+  authMsg.textContent="Creando cuenta...";
+  const redirectTo=location.origin+location.pathname;
+  const r=await fetch(URL+"/auth/v1/signup?redirect_to="+encodeURIComponent(redirectTo),{method:"POST",headers:headers(false),body:JSON.stringify({email:mail,password:pw})});
+  let d={};try{d=await r.json()}catch(e){}
+  authMsg.textContent=r.ok?"Cuenta creada. Confirma el correo y después entra.":"Error: "+(d.msg||d.message||"No se pudo crear la cuenta.");
+}
+async function signin(){
+  const mail=email.value.trim().toLowerCase(),pw=pass.value;
+  if(!mail||!pw){authMsg.textContent="Introduce correo y contraseña.";return}
+  authMsg.textContent="Comprobando acceso...";
+  const r=await fetch(URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:headers(false),body:JSON.stringify({email:mail,password:pw})});
+  const d=await r.json();
+  if(!r.ok){authMsg.textContent="Error: "+(d.error_description||d.message||"No se pudo entrar.");return}
+  session=d;localStorage.setItem("g7v2_session",JSON.stringify(d));
+  const ok=await authorize();
+  if(!ok){await signout(false);authMsg.textContent="Esta cuenta no está autorizada para G7 Control V2.";return}
+  login.classList.add("hidden");
+  await syncAll(true);
+}
+async function authorize(){
+  if(!session?.user?.email)return false;
+  const mail=session.user.email.toLowerCase();
+  const r=await api("/rest/v1/g7_v2_users?email=eq."+encodeURIComponent(mail)+"&active=eq.true&select=email,role&limit=1");
+  if(!r.ok)return false;
+  const rows=await r.json();
+  if(!rows.length)return false;
+  role=rows[0].role;
+  acct.textContent="CONECTADO · "+mail;
+  roleLine.textContent="ROL: "+role.toUpperCase();
+  return true;
+}
+async function signout(showLogin=true){
+  try{if(session?.access_token)await fetch(URL+"/auth/v1/logout",{method:"POST",headers:headers(true)})}catch(e){}
+  session=null;role=null;localStorage.removeItem("g7v2_session");acct.textContent="";roleLine.textContent="";
+  if(showLogin)login.classList.remove("hidden");
+  setSync("SINCRONIZACIÓN","Sesión cerrada");
+}
+async function forgotPassword(){
+  const mail=email.value.trim().toLowerCase();
+  if(!mail){authMsg.textContent="Escribe primero tu correo electrónico.";return}
+  authMsg.textContent="Enviando correo de recuperación...";
+  const redirectTo=location.origin+location.pathname;
+  const r=await fetch(URL+"/auth/v1/recover?redirect_to="+encodeURIComponent(redirectTo),{method:"POST",headers:headers(false),body:JSON.stringify({email:mail})});
+  let d={};try{d=await r.json()}catch(e){}
+  authMsg.textContent=r.ok?"Correo de recuperación enviado. Revisa tu bandeja de entrada.":"Error: "+(d.msg||d.message||"No se pudo enviar el correo.");
+}
+async function setNewPassword(){
+  const p1=newPass.value,p2=newPass2.value;
+  if(!recoveryToken){resetMsg.textContent="El enlace ya no es válido.";return}
+  if(p1.length<6){resetMsg.textContent="Mínimo 6 caracteres.";return}
+  if(p1!==p2){resetMsg.textContent="Las contraseñas no coinciden.";return}
+  const r=await fetch(URL+"/auth/v1/user",{method:"PUT",headers:{apikey:KEY,"Content-Type":"application/json",Authorization:"Bearer "+recoveryToken},body:JSON.stringify({password:p1})});
+  let d={};try{d=await r.json()}catch(e){}
+  if(!r.ok){resetMsg.textContent="Error: "+(d.msg||d.message||"No se pudo cambiar.");return}
+  recoveryToken=null;history.replaceState(null,"",location.pathname);
+  resetMsg.textContent="Contraseña actualizada.";
+  setTimeout(()=>{resetModal.classList.add("hidden");login.classList.remove("hidden");authMsg.textContent="Contraseña actualizada. Ya puedes entrar.";},700);
+}
+
+function pkey(){return"planner_"+current}
+function pdata(){const d={semana:current};P.forEach(i=>{const e=document.getElementById("pl_"+i);d[i]=e.type==="checkbox"?e.checked:e.value});return d}
+function papply(d={}){pl_semana.value=current;P.forEach(i=>{const e=document.getElementById("pl_"+i),v=d[i];e.type==="checkbox"?e.checked=!!v:e.value=v||""})}
+function switchW(w){current=w;renderWeekbar();pull("planner_"+w,true)}
+function renderWeekbar(){weekbar.innerHTML=W.map(w=>`<button class="${w===current?"active":""}" onclick="switchW('${w}')">${w}</button>`).join("");pl_semana.value=current}
+function wdata(){const d={checks:{},obs:{}};document.querySelectorAll("[data-wu]").forEach(e=>d.checks[e.dataset.wu+"|"+e.dataset.ww]=e.checked);document.querySelectorAll(".weeklyObs").forEach(e=>d.obs[e.dataset.wo]=e.value);return d}
+function wapply(d={}){document.querySelectorAll("[data-wu]").forEach(e=>e.checked=!!(d.checks||{})[e.dataset.wu+"|"+e.dataset.ww]);document.querySelectorAll(".weeklyObs").forEach(e=>e.value=(d.obs||{})[e.dataset.wo]||"")}
+function ddata(){const d={mes:dc_mes.value,periodo:dc_periodo.value,pendientes:dc_pendientes.value,notas:dc_notas.value,checks:{},obs:{}};document.querySelectorAll("[data-du]").forEach(e=>d.checks[e.dataset.du+"|"+e.dataset.dt]=e.checked);document.querySelectorAll(".docObs").forEach(e=>d.obs[e.dataset.do]=e.value);return d}
+function dapply(d={}){dc_mes.value=d.mes||"";dc_periodo.value=d.periodo||"";dc_pendientes.value=d.pendientes||"";dc_notas.value=d.notas||"";document.querySelectorAll("[data-du]").forEach(e=>e.checked=!!(d.checks||{})[e.dataset.du+"|"+e.dataset.dt]);document.querySelectorAll(".docObs").forEach(e=>e.value=(d.obs||{})[e.dataset.do]||"")}
+
+function schedule(section,data){
+  setSync("PENDIENTE DE SINCRONIZAR","Cambio detectado");
+  if(!session||!navigator.onLine)return;
+  clearTimeout(timer);timer=setTimeout(()=>push(section,data),500);
+}
+async function push(section,data){
+  if(!session)return;
+  const body={section_key:section,data,updated_at:new Date().toISOString(),updated_by:session.user.id};
+  const r=await api("/rest/v1/g7_v2_data?on_conflict=section_key",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(body)});
+  if(r.ok)setSync("SINCRONIZADO","SVK VI · "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
+  else setSync("ERROR DE SINCRONIZACIÓN","No se ha podido guardar el cambio");
+}
+async function pull(section,apply=true){
+  const r=await api("/rest/v1/g7_v2_data?section_key=eq."+encodeURIComponent(section)+"&select=data,updated_at&limit=1");
+  if(!r.ok)return;
+  const rows=await r.json();if(!rows.length)return;
+  const d=rows[0].data||{};
+  if(apply){
+    if(section.startsWith("planner_"))papply(d);
+    else if(section==="weekly_control")wapply(d);
+    else if(section==="document_control")dapply(d);
+  }
+}
+async function syncAll(force=false){
+  if(!session){setSync("SIN SESIÓN","Inicia sesión");return}
+  setSync("SINCRONIZANDO","Cargando datos compartidos...");
+  await pull("planner_"+current,true);await pull("weekly_control",true);await pull("document_control",true);
+  setSync("SINCRONIZADO","Datos compartidos actualizados");
+}
+
+weeklyRows.innerHTML=UNITS.map(u=>`<div class="urow"><b>${u}</b><div class="checks">${W.map(w=>`<label><input type="checkbox" data-wu="${u}" data-ww="${w}">${w}</label>`).join("")}</div><input class="obs weeklyObs" data-wo="${u}" placeholder="Observaciones"></div>`).join("");
+docsRows.innerHTML=UNITS.map(u=>`<div class="urow"><b>${u}</b><div class="checks"><label><input type="checkbox" data-du="${u}" data-dt="MONTHLY">MONTHLY</label><label><input type="checkbox" data-du="${u}" data-dt="MARCHAS">MARCHAS</label><label><input type="checkbox" data-du="${u}" data-dt="ODCR">ODCR</label></div><input class="obs docObs" data-do="${u}" placeholder="Observaciones"></div>`).join("");
+renderWeekbar();
+P.forEach(i=>{const e=document.getElementById("pl_"+i);e.addEventListener(e.type==="checkbox"?"change":"input",()=>schedule(pkey(),pdata()))});
+document.querySelectorAll("[data-wu],.weeklyObs").forEach(e=>e.addEventListener(e.type==="checkbox"?"change":"input",()=>schedule("weekly_control",wdata())));
+document.querySelectorAll("#docs input,#docs textarea").forEach(e=>e.addEventListener(e.type==="checkbox"?"change":"input",()=>schedule("document_control",ddata())));
+window.addEventListener("online",()=>syncAll(true));
+window.addEventListener("offline",()=>setSync("OFFLINE","Sin conexión"));
+
+try{
+  const hp=new URLSearchParams(location.hash.replace(/^#/,""));
+  if(hp.get("type")==="recovery"&&hp.get("access_token")){
+    recoveryToken=hp.get("access_token");login.classList.add("hidden");resetModal.classList.remove("hidden");
+  }
+}catch(e){}
+
+(async()=>{
+  if(recoveryToken)return;
+  try{
+    const s=JSON.parse(localStorage.getItem("g7v2_session")||"null");
+    if(s?.access_token){
+      session=s;
+      if(await refreshSession()&&await authorize()){login.classList.add("hidden");await syncAll(true)}
+      else{session=null;localStorage.removeItem("g7v2_session");login.classList.remove("hidden")}
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
