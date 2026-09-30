@@ -1,4 +1,4 @@
-const C='g7-control-multiuser-v3';
+const C='g7-control-multiuser-v4';
 
 const CORE=[
   './',
