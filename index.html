@@ -46,7 +46,19 @@ textarea{width:100%;min-height:95px;border:0;outline:0;padding:10px;font-size:15
       <button class="action primary" onclick="signin()">ENTRAR</button>
       <button class="action secondary" onclick="signup()">CREAR CUENTA</button>
     </div>
+    <button class="action tertiary" style="width:100%;margin-top:2px" onclick="forgotPassword()">HE OLVIDADO MI CONTRASEÑA</button>
     <div id="amsg" class="status"></div>
+  </div>
+</div>
+
+<div id="resetModal" class="modal hidden">
+  <div class="modalbox">
+    <h2>NUEVA CONTRASEÑA</h2>
+    <p>Introduce una contraseña nueva para tu cuenta de G7 Control.</p>
+    <input id="newPass" type="password" placeholder="Nueva contraseña" autocomplete="new-password">
+    <input id="newPass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password">
+    <button class="action primary" style="width:100%" onclick="setNewPassword()">GUARDAR CONTRASEÑA</button>
+    <div id="resetMsg" class="status"></div>
   </div>
 </div>
 
@@ -172,7 +184,7 @@ const URL="https://zwyrjtodcenoazcnfyte.supabase.co";
 const KEY="sb_publishable_pWWqDso4dk9pZHtzO8SXAg_DtnA2LeD";
 const W=["W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51"];
 let session=null,current=localStorage.getItem('g7_current')||'W42',timer=null;
-let workspace=null,myRole=null,pendingInvite=null;
+let workspace=null,myRole=null,pendingInvite=null,recoveryToken=null;
 const P=['del','al','p1','p2','p3','lunes','martes','miercoles','jueves','viernes','mta','rm','mf','uni','fechas','arrastre','ck_mta','ck_rm','ck_mf','ck_uni'];
 
 function show(id){
@@ -221,6 +233,49 @@ async function signup(){
   let d=await r.json();
   amsg.textContent=r.ok?'Cuenta creada. Confirma el correo y después entra.':'Error: '+(d.msg||d.message||'No se pudo crear');
 }
+async function forgotPassword(){
+  let mail=email.value.trim().toLowerCase();
+  if(!mail){amsg.textContent='Escribe primero tu correo electrónico.';return}
+  amsg.textContent='Enviando correo de recuperación...';
+  try{
+    let redirectTo=location.origin+location.pathname;
+    let r=await fetch(URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(redirectTo),{
+      method:'POST',
+      headers:headers(false),
+      body:JSON.stringify({email:mail})
+    });
+    let d={};try{d=await r.json()}catch(e){}
+    amsg.textContent=r.ok
+      ? 'Correo enviado. Revisa tu bandeja de entrada y pulsa el enlace para crear una contraseña nueva.'
+      : 'Error: '+(d.msg||d.message||'No se pudo enviar el correo de recuperación.');
+  }catch(e){
+    amsg.textContent='No se pudo conectar para enviar el correo de recuperación.';
+  }
+}
+
+async function setNewPassword(){
+  if(!recoveryToken){resetMsg.textContent='El enlace de recuperación ya no es válido. Solicita otro.';return}
+  let p1=newPass.value,p2=newPass2.value;
+  if(p1.length<6){resetMsg.textContent='La contraseña debe tener al menos 6 caracteres.';return}
+  if(p1!==p2){resetMsg.textContent='Las contraseñas no coinciden.';return}
+  resetMsg.textContent='Guardando contraseña...';
+  let r=await fetch(URL+'/auth/v1/user',{
+    method:'PUT',
+    headers:{apikey:KEY,'Content-Type':'application/json',Authorization:'Bearer '+recoveryToken},
+    body:JSON.stringify({password:p1})
+  });
+  let d={};try{d=await r.json()}catch(e){}
+  if(!r.ok){resetMsg.textContent='Error: '+(d.msg||d.message||'No se pudo cambiar la contraseña.');return}
+  history.replaceState(null,'',location.pathname+location.search);
+  recoveryToken=null;
+  resetMsg.textContent='Contraseña actualizada. Ya puedes iniciar sesión.';
+  setTimeout(()=>{
+    resetModal.classList.add('hidden');
+    login.classList.remove('hidden');
+    amsg.textContent='Contraseña actualizada. Entra con tu correo y la nueva contraseña.';
+  },800);
+}
+
 async function signin(){
   amsg.textContent='Entrando...';
   let r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:headers(false),body:JSON.stringify({email:email.value.trim(),password:pass.value})});
@@ -366,8 +421,19 @@ window.addEventListener('online',()=>syncAll(false));
 window.addEventListener('offline',()=>{syncState.textContent='OFFLINE';syncDetail.textContent='Los cambios se guardarán localmente.'});
 
 try{
+  const hp=new URLSearchParams(location.hash.replace(/^#/,''));
+  if(hp.get('type')==='recovery'&&hp.get('access_token')){
+    recoveryToken=hp.get('access_token');
+    localStorage.removeItem('g7_session');
+    session=null;
+    login.classList.add('hidden');
+    resetModal.classList.remove('hidden');
+  }
+}catch(e){}
+
+try{
   let s=JSON.parse(localStorage.getItem('g7_session')||'null');
-  if(s?.access_token){
+  if(s?.access_token&&!recoveryToken){
     session=s;
     login.classList.add('hidden');
     acct.textContent='CONECTADO · '+(s.user?.email||'usuario');
