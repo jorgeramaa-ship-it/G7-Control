@@ -181,18 +181,37 @@ function show(id){
   [['planner','bp'],['weekly','bw'],['docs','bd']].forEach(([a,b])=>document.getElementById(b).classList.toggle('active',a===id));
 }
 function headers(auth=true){let h={apikey:KEY,'Content-Type':'application/json'};if(auth&&session?.access_token)h.Authorization='Bearer '+session.access_token;return h}
+function resetInvalidSession(message='Sesión caducada. Vuelve a entrar.'){
+  session=null;workspace=null;myRole=null;pendingInvite=null;
+  localStorage.removeItem('g7_session');
+  login.classList.remove('hidden');
+  acct.textContent='';
+  workspaceLine.textContent='WORKSPACE: —';
+  amsg.textContent=message;
+}
 async function refreshSession(){
-  if(!session?.refresh_token)return false;
+  if(!session?.refresh_token){resetInvalidSession();return false}
   try{
     let r=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:headers(false),body:JSON.stringify({refresh_token:session.refresh_token})});
-    let d=await r.json(); if(!r.ok)return false;
+    let d=await r.json();
+    if(!r.ok){resetInvalidSession('La sesión anterior ya no es válida. Introduce de nuevo correo y contraseña.');return false}
     session=d;localStorage.setItem('g7_session',JSON.stringify(d));return true;
-  }catch(e){return false}
+  }catch(e){
+    resetInvalidSession('No se pudo recuperar la sesión. Introduce de nuevo correo y contraseña.');
+    return false;
+  }
 }
 async function apifetch(path,opt={},retry=true){
   opt.headers={...headers(true),...(opt.headers||{})};
   let r=await fetch(URL+path,opt);
-  if(r.status===401&&retry&&await refreshSession()){opt.headers={...headers(true),...(opt.headers||{})};r=await fetch(URL+path,opt)}
+  if(r.status===401&&retry){
+    if(await refreshSession()){
+      opt.headers={...headers(true),...(opt.headers||{})};
+      r=await fetch(URL+path,opt);
+    }else{
+      return r;
+    }
+  }
   return r;
 }
 
@@ -348,8 +367,16 @@ window.addEventListener('offline',()=>{syncState.textContent='OFFLINE';syncDetai
 
 try{
   let s=JSON.parse(localStorage.getItem('g7_session')||'null');
-  if(s?.access_token){session=s;login.classList.add('hidden');acct.textContent='CONECTADO · '+(s.user?.email||'usuario');loadWorkspace()}
-}catch(e){}
+  if(s?.access_token){
+    session=s;
+    login.classList.add('hidden');
+    acct.textContent='CONECTADO · '+(s.user?.email||'usuario');
+    (async()=>{
+      let ok=await refreshSession();
+      if(ok)await loadWorkspace();
+    })();
+  }
+}catch(e){resetInvalidSession()}
 
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script>
